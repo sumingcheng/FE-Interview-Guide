@@ -1,0 +1,16 @@
+#!/usr/bin/env sh
+. "$(dirname -- "$0")/_/husky.sh"
+
+print_colored() {
+  color_code="$1"
+  text="$2"
+  printf "\033[${color_code}m%s\033[0m\n" "$text"
+}
+
+# 运行 lint 并直接检查其退出状态
+if npm run lint; then
+  print_colored 32 "Linting successful" # 32 是绿色的 ANSI 代码
+else
+  print_colored 31 "Linting failed!" # 31 是红色的 ANSI 代码
+  exit 1
+fi

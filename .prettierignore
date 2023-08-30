@@ -1,0 +1,7 @@
+package.json
+**/*.md
+**/*.svg
+**/*.ejs
+**/*.html
+/node_modules
+/.next

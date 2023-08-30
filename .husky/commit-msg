@@ -1,0 +1,29 @@
+#!/usr/bin/env sh
+. "$(dirname -- "$0")/_/husky.sh"
+
+# 定义一个函数来输出带颜色的文本
+# 第一个参数是颜色代码，第二个参数是要输出的文本
+print_colored() {
+  color_code="$1"
+  text="$2"
+  printf "\033[${color_code}m%s\033[0m\n" "$text"
+}
+
+# 提交类型定义
+COMMIT_TYPES="feat|fix|chore|docs|style|refactor|perf|test|eslint|build|ci|revert"
+
+# 获取提交消息内容
+MSG=$(cat "$1")
+
+validate_commit_message() {
+  # 我们确保 `:` 后面有一个空格
+  if ! echo "$MSG" | grep -qE "^($COMMIT_TYPES): ."; then
+    print_colored 31 "ERROR: Commit message format is incorrect!" # 31 是红色的 ANSI 代码
+    print_colored 31 "Ensure your message starts with 'feat: ', 'fix: ', etc."
+    exit 1
+  else
+    print_colored 32 "Commit message format is correct." # 32 是绿色的 ANSI 代码
+  fi
+}
+
+validate_commit_message
