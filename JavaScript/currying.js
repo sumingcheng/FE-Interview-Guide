@@ -13,3 +13,4 @@ function curriedAdd(x) {
 const add5 = curriedAdd(5)
 const result = add5(3)
 console.log(result)
+
