@@ -1,3 +1,10 @@
+/*
+* 首先编写 on、emit 和 off 方法，实现最基本的事件监听和触发功能
+* 然后编写 once 方法，实现只触发一次的事件监听
+* 接着编写 bind 方法，实现在指定上下文中注册事件监听器
+* 最后编写 hasListener 和 getEventTypes 方法，实现检查指定事件是否有监听器和获取所有已注册的事件类型
+* */
+
 class EventHub {
   constructor() {
     // 存储所有的事件及其对应的回调
@@ -11,20 +18,6 @@ class EventHub {
     }
     this.events[event].push(callback)
     return this  // 支持链式调用
-  }
-
-  // 注册只触发一次的事件监听器
-  once(event, callback) {
-    const wrappedCallback = (...args) => {
-      callback(...args)
-      this.off(event, wrappedCallback)
-    }
-    return this.on(event, wrappedCallback)  // 利用 on 方法进行注册
-  }
-
-  // 在指定上下文中注册事件监听器
-  bind(event, callback, context) {
-    return this.on(event, callback.bind(context))
   }
 
   // 发射事件
@@ -46,10 +39,9 @@ class EventHub {
           }
         }
         resolve()
+      }).catch(error => {
+        console.error('Error in emit method:', error)
       })
-          .catch(error => {
-            console.error('Error in emit method:', error)
-          })
     }
     return this
   }
@@ -60,6 +52,20 @@ class EventHub {
       this.events[event] = this.events[event].filter(cb => cb !== callback)
     }
     return this
+  }
+
+  // 注册只触发一次的事件监听器
+  once(event, callback) {
+    const wrappedCallback = (...args) => {
+      callback(...args)
+      this.off(event, wrappedCallback)
+    }
+    return this.on(event, wrappedCallback)  // 利用 on 方法进行注册
+  }
+
+  // 在指定上下文中注册事件监听器
+  bind(event, callback, context) {
+    return this.on(event, callback.bind(context))
   }
 
   // 检查指定事件是否有监听器
