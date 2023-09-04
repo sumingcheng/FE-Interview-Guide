@@ -1,26 +1,36 @@
 function deepClone(obj) {
   const visited = new WeakMap()
 
-  const types = {
-    '[object Date]': val => new Date(val),
-    '[object RegExp]': val => new RegExp(val),
-    '[object Set]': val => new Set(),
-    '[object Map]': val => new Map(),
-    '[object Function]': val => function () {
-      return val.apply(this, arguments)
-    },
-    '[object Array]': () => [],
-    '[object Error]': val => new Error(val.message),
-    'default': val => Object.create(Object.getPrototypeOf(val))
+  function getClonedObject(currentObj) {
+    const type = Object.prototype.toString.call(currentObj)
+    switch (type) {
+      case '[object Array]':
+        return []
+      case '[object Date]':
+        return new Date(currentObj)
+      case '[object RegExp]':
+        return new RegExp(currentObj)
+      case '[object Set]':
+        return new Set()
+      case '[object Map]':
+        return new Map()
+      case '[object Function]':
+        return function () {
+          return currentObj.apply(this, arguments)
+        }
+      case '[object Error]':
+        return new Error(currentObj.message)
+      default:
+        return Object.create(Object.getPrototypeOf(currentObj))
+    }
   }
 
   function _clone(currentObj) {
-    if (_isPrimitive(currentObj)) return currentObj
+    if (currentObj === null || typeof currentObj !== 'object') return currentObj
 
     if (visited.has(currentObj)) return visited.get(currentObj)
 
-    const type = Object.prototype.toString.call(currentObj)
-    const clonedObject = (types[type] || types['default'])(currentObj)
+    const clonedObject = getClonedObject(currentObj)
 
     visited.set(currentObj, clonedObject)
 
@@ -40,21 +50,20 @@ function deepClone(obj) {
   }
 
   function _copyProperties(source, target) {
-    let allKeys = [...Object.getOwnPropertyNames(source), ...Object.getOwnPropertySymbols(source)]
+    const allKeys = [...Object.getOwnPropertyNames(source), ...Object.getOwnPropertySymbols(source)]
     for (let key of allKeys) {
       let descriptor = Object.getOwnPropertyDescriptor(source, key)
-      if (descriptor.value) descriptor.value = _clone(descriptor.value)
-      Object.defineProperty(target, key, descriptor)
+      if (descriptor.enumerable && !descriptor.get && !descriptor.set) {
+        target[key] = _clone(source[key])
+      } else {
+        if (descriptor.value) descriptor.value = _clone(descriptor.value)
+        Object.defineProperty(target, key, descriptor)
+      }
     }
-  }
-
-  function _isPrimitive(value) {
-    return value === null || (typeof value !== 'object' && typeof value !== 'function')
   }
 
   return _clone(obj)
 }
-
 
 // 使用示例
 const originalObject = {
